@@ -15,7 +15,7 @@ thinACIandMounts() {
     [[ -d $outputDir ]] || mkdir -p $outputDir
 
 
-    nix-env -f ${HOME}/synchronized/github/NixOS/nixpkgs/ -p $envDir -iA ${packages}
+    nix-env -p $envDir -iA ${packages}
     binaryPath=`find -L \`readlink -f $envDir\`/ -regex ".*/.?bin/${binary}" -executable | head -n1`
 
     ${acbuild} begin

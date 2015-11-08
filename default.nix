@@ -1,4 +1,4 @@
-{ pkgs ? import /home/steveej/synchronized/github/NixOS/nixpkgs {} }: with pkgs;
+{ pkgs ? import <nixpkgs> {} }: with pkgs;
 
 let
   mkACI = { buildInputs

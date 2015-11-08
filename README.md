@@ -38,9 +38,9 @@ ${0} name binary-name package1 [package2 ...]
 #### etcd
 Let's create an etcd package from scratch using the Nix package. Find them using the [nix-env](
 
-* Optional step for nix-shell users to make sure you have acbuild in your path. Note that acbuild package has not reached any channel yet (8 Nov 2015)
+* Optional step for nix-shell users to make sure you have acbuild in your path. Note that acbuild package has not reached any channel yet (8 Nov 2015). It's possible to use a more recent state of the nixpkgs repository for a nix-shell session like this:
 ```
-$ nix-shell
+$ nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz
 ```
 
 After identifying the correct package we construct the build arguments and call rkt.
