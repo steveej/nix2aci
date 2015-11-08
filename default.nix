@@ -1,17 +1,10 @@
-{ pkgs ? import <nixpkgs> {} }: with pkgs;
+{ pkgs ? import <nixpkgs> {}
+, mkACI ? import lib/mkACI.nix
+}:
 
-let
-  mkACI = { buildInputs
-            , version } @ args:
-    stdenv.mkDerivation (rec { 
-      # TODO?: possibly implement script over here
-    } // args);
-  std = stdenv.mkDerivation {
-    name = "nix2go";
-    buildInputs =  [
-      goPackages.acbuild
-    ];
-  };
-in rec {
-  inherit std;
+let 
+  stdArgs = { inherit pkgs; inherit mkACI; };
+in {
+  busybox = import pkgs/linux/busybox.nix stdArgs // { };
+  etcd2 = import pkgs/linux/etcd2.nix stdArgs // { };
 }
