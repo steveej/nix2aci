@@ -1,5 +1,5 @@
 # nix2aci
-Let's use Nix' super powers to build [http://github.com/appc/spec](AC Images)!
+Let's use Nix' super powers to build [App Container Images](http://github.com/appc/spec)!
 
 This project should be understood as a proof of concept until stated otherwise.
 You can expect this README to be minimal but it should always contain working examples.
@@ -11,20 +11,17 @@ You can expect this README to be minimal but it should always contain working ex
 * [coreos/rkt](https://github.com/coreos/rkt/)
 
 # Building ACIs
-There's more than one way to build and use ACIs with Nix, because the filesystem structure allows for side-by-side installations of almost any package. Every package (version) is stored at $NIX_STORE identified by hash, and can be pulled into different profiles independently. These profiles could be copied, but it should also be possible to pass them on to a container in one way.
+There's more than one way to build and use ACIs with Nix, because the filesystem structure allows for side-by-side installations of almost any package. Every package (version) is stored at $NIX\_STORE identified by hash, and can be pulled into different profiles independently. These profiles could be copied, but it should also be possible to pass them on to a container in one way.
 
 ## Thin ACIs
-In this special case, the build output from the nix store can be used directly in the running container.
-These ACIs don't need to contain any files of the packages they want to use.
-Let's call them thin ACIs until theres a better name.
 Thin ACIs don't contain any binary files, but for the most part just the manifest file and a directory skeleton.
-The manifest file contains mount points that are supposed to mount the path in the hosts nix store where the files of interest reside.
-This generates one mountpoint per package which could add up to a few dozen depending on the target package, which have to be passed to the runtime that 
+The manifest file specifies one host type mount per package, representing the effectively available packages for the ACI.
+These mountpoints can add up to a few dozen depending on the target package, and they all have to be passed to the container runtime that consumes the ACI, supplying the correct path from the host to the package's mount.
 
-In order to make this usable, a file that can be `cat`ed into the rkt cmdline will be generated alongside the ACI.
+In order to make this usable, a file that can be `cat`ed into the rkt cmdline will be generated alongside the ACI when using the build script.
 
 ### Usage
-This is what will surely change in the future.
+This section will surely change in the future.
 
 ```
 ${0} name binary-name package1 [package2 ...]
