@@ -4,9 +4,12 @@ let
 in
 
 mkACI rec {
-  name = binaryPackage.name;
-  binaryPackage = pkgs.go15Packages.etcd.bin;
+  pkg  = pkgs.go15Packages.etcd.bin;
+  name = pkg.name;
+
+  packages = [ pkg ];
   binary = "etcd";
+  exec = "/bin/etcd";
 
   mounts = {
     "datadir" = "/var/db/etcd2";

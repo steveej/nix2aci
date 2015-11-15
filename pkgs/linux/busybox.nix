@@ -11,8 +11,15 @@ in
 
 mkACI rec {
       thin = false;
+      labels = {
+        "os"="linux";
+        "arch"="amd64";
+      };
+      ports = {
+        "nc" = [ "tcp" "1024" ];
+      };
       name = staticbb.name+"-static";
-      binaryPackage = staticbb;
-      binary = "busybox";
+      packages = [ staticbb ];
+      exec = ''/bin/busybox -- nc -l -p 1024'';
 }
 

@@ -1,19 +1,19 @@
 args @ { pkgs ? import <nixpkgs> {}
 , name
-, binary
-, binaryPackage
-, version ? pkgs.lib.strings.getVersion {drv=binaryPackage;}
-, additionalBuildInputs ? []
+, packages
+, version ? pkgs.lib.strings.getVersion {drv=packages[0].name;}
 , thin ? false
+, labels ? {}
 , mounts ? {}
 , mountsRo ? {}
-, envAdd ? {}
-, envRemove ? []
+, ports ? {}
+, env ? {}
+, exec ? ""
+, user ? "0"
+, group ? "0"
 }:
   pkgs.stdenv.mkDerivation rec { 
   inherit name;
-  inherit binary;
-  inherit binaryPackage;
 
   # acbuild and perl are needed for the build script that procudes the ACI
   buildInputs = [ pkgs.goPackages.acbuild pkgs.perl ];
@@ -21,12 +21,15 @@ args @ { pkgs ? import <nixpkgs> {}
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
     name = name + "-env";
-    paths = [ binaryPackage ] ++ additionalBuildInputs;
+    paths = packages;
   };
-  requestedBuildInputs = [ binaryPackage ] ++ additionalBuildInputs;
-  exportReferencesGraph = map (x: [("closure-" + baseNameOf x) x]) requestedBuildInputs;
+  exportReferencesGraph = map (x: [("closure-" + baseNameOf x) x]) packages;
 
   acbuild="acbuild --debug ";
+
+  labelAddString = builtins.foldl' (res: l: 
+    res + "${acbuild} label add ${l} ${labels.${l}}\n"
+  ) "" (builtins.attrNames labels);
 
   mountsString = builtins.foldl' (res: n: 
     res + "${acbuild} mount add ${n} ${mountsRo.${n}} --read-only\n"
@@ -36,19 +39,20 @@ args @ { pkgs ? import <nixpkgs> {}
   ) "" (builtins.attrNames mounts);
 
   envAddString = builtins.foldl' (res: n: res +
-    "${acbuild} environment add ${n} ${envAdd.${n}}\n"
-  ) "" (builtins.attrNames envAdd);
+    "${acbuild} environment add ${n} ${env.${n}}\n"
+  ) "" (builtins.attrNames env);
 
-  envRemoveString = builtins.foldl' (res: n: res +
-    "${acbuild} environment remove ${n}\n"
-  ) "" envRemove;
+  portAddString = builtins.foldl' (res: p: 
+    res + "${acbuild} port add ${p} ${builtins.concatStringsSep " " ports.${p}} \n"
+  ) "" (builtins.attrNames ports);
+
+  execString = if exec == null then "" else "${acbuild} set-exec ${exec}\n";
 
 
   phases = "buildPhase";
   buildPhase = ''
     set -e
 
-    binaryPath=`${pkgs.findutils}/bin/find -L ${binaryPackage} -regex ".*/.?bin/${binary}" -executable | head -n1`
     storePaths=$(perl ${pkgs.pathsFromGraph} closure-*)
 
     ${acbuild} begin
@@ -60,8 +64,6 @@ args @ { pkgs ? import <nixpkgs> {}
 
     # Generic Manifest information
     ${acbuild} set-name $name
-    ${acbuild} label add os linux
-    ${acbuild} label add arch amd64
 
     # The environment contians symlinks in bin/, sbin/, etc...
     # TODO: fix acbuild copy so it allows to copy this structure
@@ -90,11 +92,15 @@ args @ { pkgs ? import <nixpkgs> {}
     done
     ''}
 
+    ${labelAddString}
     ${mountsString}
     ${envAddString}
-    ${envRemoveString}
+    ${portAddString}
 
-    ${acbuild} set-exec -- $binaryPath
+    ${execString}
+    ${acbuild} set-user ${user};
+    ${acbuild} set-group ${group};
+
     ${acbuild} write --overwrite $out/$name.aci
   '';
 
