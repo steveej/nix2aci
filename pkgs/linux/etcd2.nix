@@ -1,15 +1,20 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
 let 
-
+  pkg = pkgs.go15Packages.etcd.bin;
 in
 
 mkACI rec {
-  pkg  = pkgs.go15Packages.etcd.bin;
-  name = pkg.name;
+  inherit pkgs;
+  thin = false;
 
+  name = pkg.name;
   packages = [ pkg ];
-  binary = "etcd";
   exec = "/bin/etcd";
+
+  labels = {
+    "os"="linux";
+    "arch"="amd64";
+  };
 
   mounts = {
     "datadir" = "/var/db/etcd2";
@@ -19,7 +24,7 @@ mkACI rec {
     "resolvconf"="/etc/resolv.conf";
   };
 
-  envAdd = {
+  env = {
     "ETCD_DATA_DIR"="/var/db/etcd2/";
   };
 }

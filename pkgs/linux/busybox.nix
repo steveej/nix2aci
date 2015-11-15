@@ -7,19 +7,24 @@ let
           CONFIG_INSTALL_APPLET_SYMLINKS n                                                     
         '';                                                                                    
   });       
+  pkg = staticbb;
 in
 
 mkACI rec {
-      thin = false;
-      labels = {
-        "os"="linux";
-        "arch"="amd64";
-      };
-      ports = {
-        "nc" = [ "tcp" "1024" ];
-      };
-      name = staticbb.name+"-static";
-      packages = [ staticbb ];
-      exec = ''/bin/busybox -- nc -l -p 1024'';
+  inherit pkgs; 
+  thin = false;
+
+  name = pkg.name+"-static";
+  packages = [ pkg ];
+  exec = ''/bin/busybox -- nc -l -p 1024'';
+
+  labels = {
+    "os"="linux";
+    "arch"="amd64";
+  };
+
+  ports = {
+    "nc" = [ "tcp" "1024" ];
+  };
 }
 

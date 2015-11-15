@@ -1,4 +1,4 @@
-args @ { pkgs ? import <nixpkgs> {}
+args @ { pkgs
 , name
 , packages
 , version ? pkgs.lib.strings.getVersion {drv=packages[0].name;}
@@ -16,7 +16,7 @@ args @ { pkgs ? import <nixpkgs> {}
   inherit name;
 
   # acbuild and perl are needed for the build script that procudes the ACI
-  buildInputs = [ pkgs.goPackages.acbuild pkgs.perl ];
+  buildInputs = [ pkgs.go15Packages.acbuild pkgs.perl ];
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
