@@ -11,6 +11,7 @@ args @ { pkgs
 , exec ? ""
 , user ? "0"
 , group ? "0"
+, sign ? true
 }:
   pkgs.stdenv.mkDerivation rec { 
   inherit name;
@@ -102,6 +103,11 @@ args @ { pkgs
     ${acbuild} set-group ${group};
 
     ${acbuild} write --overwrite $out/$name.aci
+    ${if sign == true then "
+      eval $(${pkgs.gnupg}/bin/gpg-agent --homedir=/etc/gpg2 --daemon)
+      ${pkgs.gnupg}/bin/gpg2 --options /dev/null --homedir=/etc/gpg2 --batch --armor --lock-never --secret-key=/etc/gpg2/secring.gpg --no-permission-warning --output $out/$name.aci.asc --detach-sig $out/$name.aci
+    "
+    else ""}
   '';
 
 }

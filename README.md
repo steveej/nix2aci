@@ -11,6 +11,12 @@ You can expect this README to be minimal but it should always contain working ex
 ## Runtime Requirements
 * [coreos/rkt](https://github.com/coreos/rkt/)
 
+## Signing Requirements
+Including the signing process into the nix workflow seems quite tedious and is not fully satisfactory at this point. I chose to setup a key for the nix build environment. The downside is that every build can read and use the key which is bad if the build system is compromised in any way.
+
+Please take a look at [the included script](scripts/setup-gpg.sh), which can be used to do the preparation.
+
+
 # Building ACIs
 There's more than one way to build and use ACIs with Nix, because the filesystem structure allows for side-by-side installations of almost any package. Every package (version) is stored at $NIX\_STORE identified by hash, and can be pulled into different profiles independently. These profiles could be copied, but it should also be possible to bind-mount the host versions into the containers.
 
@@ -33,5 +39,9 @@ This section will surely ***CHANGES TO FAST TO UPDATE***.
 Fat ACIs contain all files that are needed to run the contained application. This is the choice if you want to move the ACI onto a system where for whichever reason the nix store outputs are not available.
 
 
-### Usage
+### Usage Example
 This section will surely ***CHANGES TO FAST TO UPDATE***.
+
+```
+$ nix-build . -A busybox
+```
