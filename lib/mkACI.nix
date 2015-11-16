@@ -1,7 +1,8 @@
 args @ { pkgs
-, name
 , packages
-, version ? pkgs.lib.strings.getVersion {drv=packages[0].name;}
+, name ? (builtins.parseDrvName (builtins.elemAt packages 0).name).name
+, versionAddon ? ""
+, version ? pkgs.lib.strings.getVersion {name=(builtins.elemAt packages 0).name; drv=builtins.elemAt packages 0;} + versionAddon
 , thin ? false
 , labels ? {}
 , mounts ? {}
@@ -15,6 +16,7 @@ args @ { pkgs
 }:
   pkgs.stdenv.mkDerivation rec { 
   inherit name;
+  inherit version;
 
   # acbuild and perl are needed for the build script that procudes the ACI
   buildInputs = [ pkgs.go15Packages.acbuild pkgs.perl ];
@@ -52,6 +54,7 @@ args @ { pkgs
 
   phases = "buildPhase";
   buildPhase = ''
+    set -x
     set -e
 
     storePaths=$(perl ${pkgs.pathsFromGraph} closure-*)
@@ -71,7 +74,6 @@ args @ { pkgs
     cp -a ${customEnv}/* .acbuild/currentaci/rootfs/
 
     mkdir -p $out
-    printf "" > $out/$name.mounts
 
     # DNS quirks
     mkdir -p .acbuild/currentaci/rootfs/etc
@@ -79,11 +81,12 @@ args @ { pkgs
     printf '::1 localhost\n' "" >> .acbuild/currentaci/rootfs/etc/hosts
 
     ${if thin == true then ''
+    printf "" > $out/$name.mounts
     for p in ''${storePaths}; do
       mountname=''${p//[\/\.]/} 
       mountname=''${mountname,,} 
       ${acbuild} mount add $mountname $p --read-only
-      printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/$name.mounts
+      printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/$name-$version.mounts
     done
     ''
     else ''
@@ -102,12 +105,25 @@ args @ { pkgs
     ${acbuild} set-user ${user};
     ${acbuild} set-group ${group};
 
-    ${acbuild} write --overwrite $out/$name.aci
-    ${if sign == true then "
-      eval $(${pkgs.gnupg}/bin/gpg-agent --homedir=/etc/gpg2 --daemon)
-      ${pkgs.gnupg}/bin/gpg2 --options /dev/null --homedir=/etc/gpg2 --batch --armor --lock-never --secret-key=/etc/gpg2/secring.gpg --no-permission-warning --output $out/$name.aci.asc --detach-sig $out/$name.aci
-    "
-    else ""}
+    ${acbuild} write --overwrite $out/$name-$version.aci
+
+    postProcScript=$out/postprocess.sh
+
+    cat > $postProcScript <<EOF
+#!/usr/bin/env bash
+script_outdir=\''${1:-ACIs/}
+mkdir -p \$script_outdir
+echo Linking $out/$name-$version.aci into \$script_outdir
+ln -sf $out/$name-$version.aci \$script_outdir/
+if [[ -e $out/$name-$version.mounts ]]; then 
+  echo Linking $out/$name-$version.mounts into \$script_outdir
+  ln -sf $out/$name-$version.mounts \$script_outdir;
+fi
+${if sign == true then "gpg2 --batch --armor --output \\$script_outdir/$name-$version.aci.asc --detach-sig $out/$name-$version.aci"
+else ""}
+EOF
+
+    chmod +x $postProcScript
   '';
 
 }

@@ -13,10 +13,9 @@ in
 mkACI rec {
   inherit pkgs; 
   thin = false;
-
-  name = pkg.name+"-static";
   packages = [ pkg ];
-  exec = ''/bin/busybox -- nc -l -p 1024'';
+  versionAddon = "-static";
+  exec = ''/bin/busybox -- sh'';
 
   labels = {
     "os"="linux";
