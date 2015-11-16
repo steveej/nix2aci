@@ -1,20 +1,28 @@
-{ mkACI, pkgs, thin ? false, ... } @ args:
+{ mkACI
+, pkgs
+, thin ? false
+, static
+, ... }
+@ args:
+
 let
-  staticbb = (pkgs.busybox.override {                                                                       
-        extraConfig = ''                                                                       
-          CONFIG_STATIC y                                                                      
-          CONFIG_INSTALL_APPLET_DONT y                                                         
-          CONFIG_INSTALL_APPLET_SYMLINKS n                                                     
-        '';                                                                                    
-  });       
-  pkg = staticbb;
+  pkg = if static == true
+    then
+      (pkgs.busybox.override {
+         extraConfig = ''
+           CONFIG_STATIC y
+           CONFIG_INSTALL_APPLET_DONT y
+           CONFIG_INSTALL_APPLET_SYMLINKS n
+         '';
+      })
+    else pkgs.busybox;
 in
 
 mkACI rec {
-  inherit pkgs; 
+  inherit pkgs;
   thin = false;
   packages = [ pkg ];
-  versionAddon = "-static";
+  versionAddon = if static == true then "-static" else "";
   exec = ''/bin/busybox -- sh'';
 
   labels = {

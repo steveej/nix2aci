@@ -7,8 +7,8 @@
 }:
 
 let 
-  stdArgs = { inherit pkgs; inherit mkACI; };
 in {
-  busybox = import pkgs/linux/busybox.nix stdArgs // { };
-  etcd2 = import pkgs/linux/etcd2.nix stdArgs // { };
+  busybox = import pkgs/linux/busybox.nix { inherit pkgs; inherit mkACI; static=false; };
+  busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs; inherit mkACI; static=true; };
+  etcd2 = import pkgs/linux/etcd2.nix { inherit pkgs; inherit mkACI; static=false; };
 }
