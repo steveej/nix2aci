@@ -14,12 +14,35 @@ args @ { pkgs
 , group ? "0"
 , sign ? true
 }:
-  pkgs.stdenv.mkDerivation rec { 
+
+let
+  myacbuild = pkgs.stdenv.mkDerivation rec {
+    version = "0.2.1";
+    name = "acbuild-${version}";
+    src = pkgs.fetchFromGitHub {
+      rev    = "42f7b64f898f269e04017db5ef4f0136645fb07b";
+      owner  = "appc";
+      repo   = "acbuild";
+      sha256 = "1sgndhjgharfrdqfcbbwdc038j5y3bb5prgpv2crimyc7rqpgvrw";
+    };
+    buildInputs = [ pkgs.goPackages.go ];
+    patchPhase = ''
+      sed -i -e 's|\$(git describe --dirty)|"${version}"|' build
+      sed -i -e 's|\$GOBIN/acbuild|$out/bin/acbuild|' build
+    '';
+    installPhase = ''
+      mkdir -p $out/bin
+      ./build
+    '';
+  };
+
+in
+  pkgs.stdenv.mkDerivation rec {
   inherit name;
   inherit version;
 
   # acbuild and perl are needed for the build script that procudes the ACI
-  buildInputs = [ pkgs.go15Packages.acbuild pkgs.perl ];
+  buildInputs =[ myacbuild pkgs.perl ];
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
