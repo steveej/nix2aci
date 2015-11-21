@@ -13,6 +13,8 @@ args @ { pkgs
 , user ? "0"
 , group ? "0"
 , sign ? true
+, dnsquirks ? true
+, static ? false
 }:
 
 let
@@ -80,7 +82,13 @@ in
     set -x
     set -e
 
+    ${if static == true then ''
+    storePaths=${builtins.elemAt packages 0}
+    echo STATIC
+    '' else ''
     storePaths=$(perl ${pkgs.pathsFromGraph} closure-*)
+    echo DYNAMIC
+    ''}
 
     ${acbuild} begin
     trap "{ export EXT=$?;

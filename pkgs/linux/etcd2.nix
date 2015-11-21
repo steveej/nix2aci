@@ -5,7 +5,7 @@ in
 
 mkACI rec {
   inherit pkgs;
-  thin = false;
+  inherit thin;
 
   name = pkg.name;
   packages = [ pkg ];

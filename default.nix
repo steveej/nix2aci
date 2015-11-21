@@ -8,7 +8,17 @@
 
 let 
 in {
-  busybox = import pkgs/linux/busybox.nix { inherit pkgs; inherit mkACI; static=false; };
-  busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs; inherit mkACI; static=true; };
-  etcd2 = import pkgs/linux/etcd2.nix { inherit pkgs; inherit mkACI; static=false; };
+  busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
+  busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
+
+  coreosIpxeServer = import pkgs/linux/coreos-ipxe-server.nix { inherit pkgs mkACI; };
+
+  dnsmasq = import pkgs/linux/dnsmasq.nix { inherit pkgs mkACI; };
+  dnsfail = import pkgs/linux/dnsfail.nix { inherit pkgs mkACI; };
+
+  etcd2 = import pkgs/linux/etcd2.nix { inherit pkgs mkACI; };
+
+  lighthttpd = import pkgs/linux/lighthttpd.nix { inherit pkgs mkACI; };
+
+  qemu = import pkgs/linux/qemu.nix { inherit pkgs mkACI; };
 }

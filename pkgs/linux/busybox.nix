@@ -20,6 +20,7 @@ in
 
 mkACI rec {
   inherit pkgs;
+  inherit static;
   thin = false;
   packages = [ pkg ];
   versionAddon = if static == true then "-static" else "";
