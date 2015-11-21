@@ -9,7 +9,7 @@ args @ { pkgs
 , mountsRo ? {}
 , ports ? {}
 , env ? {}
-, exec ? ""
+, exec ? null
 , user ? "0"
 , group ? "0"
 , sign ? true
@@ -53,11 +53,11 @@ in
 
   acbuild="acbuild --debug ";
 
-  labelAddString = builtins.foldl' (res: l: 
+  labelAddString = builtins.foldl' (res: l:
     res + "${acbuild} label add ${l} ${labels.${l}}\n"
   ) "" (builtins.attrNames labels);
 
-  mountsString = builtins.foldl' (res: n: 
+  mountsString = builtins.foldl' (res: n:
     res + "${acbuild} mount add ${n} ${mountsRo.${n}} --read-only\n"
   ) "" (builtins.attrNames mountsRo) +
     builtins.foldl' (res: n:
@@ -68,7 +68,7 @@ in
     "${acbuild} environment add ${n} ${env.${n}}\n"
   ) "" (builtins.attrNames env);
 
-  portAddString = builtins.foldl' (res: p: 
+  portAddString = builtins.foldl' (res: p:
     res + "${acbuild} port add ${p} ${builtins.concatStringsSep " " ports.${p}} \n"
   ) "" (builtins.attrNames ports);
 
@@ -94,20 +94,23 @@ in
 
     # The environment contians symlinks in bin/, sbin/, etc...
     # TODO: fix acbuild copy so it allows to copy this structure
-    cp -a ${customEnv}/* .acbuild/currentaci/rootfs/
+    [[ ! -e ${customEnv}/etc ]] || cp -aL ${customEnv}/etc .acbuild/currentaci/rootfs/
+    cp -au ${customEnv}/* .acbuild/currentaci/rootfs/
 
     mkdir -p $out
 
     # DNS quirks
+    ${if dnsquirks == true then ''
     mkdir -p .acbuild/currentaci/rootfs/etc
     printf '127.0.0.1 localhost\n' "" >> .acbuild/currentaci/rootfs/etc/hosts
     printf '::1 localhost\n' "" >> .acbuild/currentaci/rootfs/etc/hosts
+    '' else ""}
 
     ${if thin == true then ''
     printf "" > $out/$name.mounts
     for p in ''${storePaths}; do
-      mountname=''${p//[\/\.]/} 
-      mountname=''${mountname,,} 
+      mountname=''${p//[\/\.]/}
+      mountname=''${mountname,,}
       ${acbuild} mount add $mountname $p --read-only
       printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/$name-$version.mounts
     done
@@ -138,7 +141,7 @@ script_outdir=\''${1:-ACIs/}
 mkdir -p \$script_outdir
 echo Linking $out/$name-$version.aci into \$script_outdir
 ln -sf $out/$name-$version.aci \$script_outdir/
-if [[ -e $out/$name-$version.mounts ]]; then 
+if [[ -e $out/$name-$version.mounts ]]; then
   echo Linking $out/$name-$version.mounts into \$script_outdir
   ln -sf $out/$name-$version.mounts \$script_outdir;
 fi
