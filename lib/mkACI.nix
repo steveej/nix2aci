@@ -13,6 +13,7 @@ args @ { pkgs
 , user ? "0"
 , group ? "0"
 , sign ? true
+, isolators ? {}
 , dnsquirks ? true
 , static ? false
 }:
@@ -74,6 +75,10 @@ in
     res + "${acbuild} port add ${p} ${builtins.concatStringsSep " " ports.${p}} \n"
   ) "" (builtins.attrNames ports);
 
+  isolatorAddString = builtins.foldl' (res: i:
+    res + "echo '${isolators.${i}}' | ${acbuild} isolator add ${i} -\n"
+  ) "" (builtins.attrNames isolators);
+
   execString = if exec == null then "" else "${acbuild} set-exec ${exec}\n";
 
 
@@ -134,6 +139,7 @@ in
     ${mountsString}
     ${envAddString}
     ${portAddString}
+    ${isolatorAddString}
 
     ${execString}
     ${acbuild} set-user ${user};
