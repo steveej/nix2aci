@@ -22,17 +22,8 @@ mkACI rec {
   inherit pkgs;
   inherit static;
   thin = false;
-  packages = [ pkg ];
+  packages = [ pkg pkgs.eject ];
   versionAddon = if static == true then "-static" else "";
-  exec = ''/bin/busybox -- sh'';
-
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
-
-  ports = {
-    "nc" = [ "tcp" "1024" ];
-  };
+  exec = ''/bin/busybox -- sh -c "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"'';
 }
 

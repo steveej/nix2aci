@@ -15,11 +15,6 @@ mkACI rec {
   versionAddon = "";
   exec = ''/bin/lighthttpd'';
 
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
-
   ports = {
     "http" = [ "tcp" "8000" ];
     "https" = [ "tcp" "8443" ];

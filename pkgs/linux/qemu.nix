@@ -19,11 +19,6 @@ mkACI rec {
     -boot reboot-timeout=60 \
   '';
 
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
-
   ports = {
     "spice" = [ "tcp" "5101" ];
     "vnc" = [ "tcp" "5900" ];

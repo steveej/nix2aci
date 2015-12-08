@@ -16,11 +16,6 @@ mkACI rec {
   versionAddon = "";
   exec = ''/bin/dnsmasq'';
 
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
-
   mounts = {
     "varlibmisc" = "/var/lib/misc/";
     "varrun" = "/var/run/";

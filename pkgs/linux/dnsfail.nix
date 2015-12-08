@@ -16,12 +16,6 @@ in mkACI rec {
   inherit thin;
   inherit static;
 
-  name = pkg.name;
   packages = [ pkg ];
   exec = "/bin/dnsfail";
-
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
 }

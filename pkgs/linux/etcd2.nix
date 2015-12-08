@@ -7,14 +7,11 @@ mkACI rec {
   inherit pkgs;
   inherit thin;
 
-  name = pkg.name;
+  acName = "etcd";
+  acVersion = builtins.elemAt (pkgs.stdenv.lib.strings.splitString "v" pkg.name) 1;
+
   packages = [ pkg ];
   exec = "/bin/etcd";
-
-  labels = {
-    "os"="linux";
-    "arch"="amd64";
-  };
 
   mounts = {
     "datadir" = "/var/db/etcd2";

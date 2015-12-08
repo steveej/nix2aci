@@ -1,0 +1,37 @@
+diff --git a/Godeps/_workspace/src/github.com/codegangsta/negroni/static.go b/Godeps/_workspace/src/github.com/codegangsta/negroni/static.go
+index c5af4e6..1351479 100644
+--- a/Godeps/_workspace/src/github.com/codegangsta/negroni/static.go
++++ b/Godeps/_workspace/src/github.com/codegangsta/negroni/static.go
+@@ -1,8 +1,11 @@
+ package negroni
+ 
+ import (
++	"fmt"
+ 	"net/http"
++	"os"
+ 	"path"
++	"path/filepath"
+ 	"strings"
+ )
+ 
+@@ -43,6 +46,20 @@ func (s *Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.Ha
+ 			return
+ 		}
+ 	}
++
++	stat, err := os.Stat(filepath.Join(fmt.Sprintf("%s", s.Dir), file))
++	if err != nil {
++		next(rw, r)
++		return
++	}
++	if (stat.Mode() & os.ModeSymlink) != 0 {
++		file, err = os.Readlink(file)
++		if err != nil {
++			next(rw, r)
++			return
++		}
++	}
++
+ 	f, err := s.Dir.Open(file)
+ 	if err != nil {
+ 		// discard the error?
