@@ -1,10 +1,13 @@
 args @ { pkgs
 , packages
-, name ? (builtins.parseDrvName (builtins.elemAt packages 0).name).name
+, pkg ? builtins.elemAt packages 0
+, acName ? (builtins.parseDrvName pkg.name).name
+, acVersion ? if builtins.hasAttr "version" pkg && pkg.version != "" then pkg.version else (builtins.parseDrvName pkg.name).version
 , versionAddon ? ""
-, version ? pkgs.lib.strings.getVersion {name=(builtins.elemAt packages 0).name; drv=builtins.elemAt packages 0;} + versionAddon
+, arch ? builtins.replaceStrings ["x86_64"] ["amd64"] (builtins.elemAt (pkgs.stdenv.lib.strings.splitString "-" pkg.system) 0)
+, os ? builtins.elemAt (pkgs.stdenv.lib.strings.splitString "-" pkg.system) 1
 , thin ? false
-, labels ? {}
+, acLabels ? {}
 , mounts ? {}
 , mountsRo ? {}
 , ports ? {}
@@ -39,13 +42,21 @@ let
     '';
   };
 
+  labels = {
+    "os"=os;
+    "arch"= arch;
+  } // acLabels;
+
 in
   pkgs.stdenv.mkDerivation rec {
-  inherit name;
-  inherit version;
+  name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;
+  version = builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon;
+
+  inherit os;
+  inherit arch;
 
   # acbuild and perl are needed for the build script that procudes the ACI
-  buildInputs =[ myacbuild pkgs.perl ];
+  buildInputs = [ myacbuild pkgs.perl ];
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
@@ -54,7 +65,9 @@ in
   };
   exportReferencesGraph = map (x: [("closure-" + baseNameOf x) x]) packages;
 
+  acname = "${name}-${version}-${os}-${arch}";
   acbuild="acbuild --debug ";
+
 
   labelAddString = builtins.foldl' (res: l:
     res + "${acbuild} label add ${l} ${labels.${l}}\n"
@@ -103,7 +116,7 @@ in
     }" EXIT
 
     # Generic Manifest information
-    ${acbuild} set-name $name
+    ${acbuild} set-name ${name}
 
     # The environment contians symlinks in bin/, sbin/, etc...
     # TODO: fix acbuild copy so it allows to copy this structure
@@ -120,12 +133,12 @@ in
     '' else ""}
 
     ${if thin == true then ''
-    printf "" > $out/$name.mounts
+    printf "" > $out/${acname}.mounts
     for p in ''${storePaths}; do
       mountname=''${p//[\/\.]/}
       mountname=''${mountname,,}
       ${acbuild} mount add $mountname $p --read-only
-      printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/$name-$version.mounts
+      printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/${acname}.mounts
     done
     ''
     else ''
@@ -145,7 +158,8 @@ in
     ${acbuild} set-user ${user};
     ${acbuild} set-group ${group};
 
-    ${acbuild} write --overwrite $out/$name-$version.aci
+
+    ${acbuild} write --overwrite $out/${acname}.aci
 
     postProcScript=$out/postprocess.sh
 
@@ -153,13 +167,13 @@ in
 #!/usr/bin/env bash
 script_outdir=\''${1:-ACIs/}
 mkdir -p \$script_outdir
-echo Linking $out/$name-$version.aci into \$script_outdir
-ln -sf $out/$name-$version.aci \$script_outdir/
-if [[ -e $out/$name-$version.mounts ]]; then
-  echo Linking $out/$name-$version.mounts into \$script_outdir
-  ln -sf $out/$name-$version.mounts \$script_outdir;
+echo Linking $out/${acname}.aci into \$script_outdir
+ln -sf $out/${acname}.aci \$script_outdir/
+if [[ -e $out/${acname}.mounts ]]; then
+  echo Linking $out/${acname}.mounts into \$script_outdir
+  ln -sf $out/${acname}.mounts \$script_outdir;
 fi
-${if sign == true then "gpg2 --batch --armor --output \\$script_outdir/$name-$version.aci.asc --detach-sig $out/$name-$version.aci"
+${if sign == true then "gpg2 --batch --armor --output \\$script_outdir/${acname}.aci.asc --detach-sig $out/${acname}.aci"
 else ""}
 EOF
 
