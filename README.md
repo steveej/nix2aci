@@ -4,11 +4,12 @@ Let's use Nix' super powers to build [App Container Images](http://github.com/ap
 This project should be understood as a proof of concept until stated otherwise.
 You can expect this README to be minimal but it should always contain working examples.
 
-## Build Requirements
+## ACI Build Requirements
 * local copy of this repository
 * [nix](http://www.nixos.org/nix) plus the skills to query package names
+* [acbuild](http://github.com/appc/acbuild)
 
-## Runtime Requirements
+## ACI Runtime Requirements
 * [coreos/rkt](https://github.com/coreos/rkt/)
 
 ## Signing Requirements
@@ -38,30 +39,33 @@ Fat ACIs contain all files that are needed to run the contained application. Thi
 
 ## Demonstration
 The following example builds the busybox ACI expression that is defined in the file [pkgs/linux/busybox.nix](pkgs/linux/busybox.nix).
-In order to be available at `.` level, an import statement in the *default.nix* is necessary.
+In order to be available at top level, an import statement in the *default.nix* is necessary.
 
 ```
-$ grep -n busybox default.nix 
-12:  busybox = import pkgs/linux/busybox.nix stdArgs // { };
+$ grep -n busybox default.nix
+13:  busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
+14:  busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
 ```
 
 Now let's build, sign and run it:
 ```
-$ nix-build . -A busybox
+$ nix-build -A busybox
+
 $ ./result/postprocess.sh 
-Linking /nix/store/8m4wjjx56xgqcj38qvq0f3f7wmzg0k4c-busybox/busybox-1.23.2-static.aci into ACIs/
+Linking /nix/store/y7dh7bfdhafaf530lih071515z8khwva-busybox/busybox-1.23.2-linux-amd64.aci into ACIs/
+
 $ tree ACIs/
 ACIs/
-├── busybox-1.23.2-static.aci -> /nix/store/090j5jwrz07yrbr6am2bmqm5asvirfh0-busybox/busybox-1.23.2-static.aci
-└── busybox-1.23.2-static.aci.asc
+├── busybox-1.23.2-linux-amd64.aci -> /nix/store/y7dh7bfdhafaf530lih071515z8khwva-busybox/busybox-1.23.2-linux-amd64.aci
+└── busybox-1.23.2-linux-amd64.aci.asc
 
-0 directories, 4 files
-$ sudo rkt run --interactive ACIs/busybox-1.23.2-static.aci
-rkt: using image from local store for image name coreos.com/rkt/stage1-coreos:0.10.0
-rkt: using image from file /home/steveej/src/github/steveej/nix2aci/ACIs/busybox-1.23.2-static.aci
+$ sudo rkt run --interactive ACIs/busybox-1.23.2-linux-amd64.aci
+rkt: using image from local store for image name coreos.com/rkt/stage1-coreos:0.13.0
+rkt: using image from file /home/steveej/src/github/steveej/nix2aci/ACIs/busybox-1.23.2-linux-amd64.aci
 rkt: signature verified:
   Stefan Junker <mail@stefanjunker.de>
   Stefan Junker <code@stefanjunker.de>
 run: group "rkt" not found, will use default gid when rendering images
-/ # 
+/ # busybox | head -n1
+BusyBox v1.23.2 () multi-call binary.
 ```
