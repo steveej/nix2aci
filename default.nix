@@ -21,4 +21,5 @@ in {
   pixiecore = import pkgs/linux/pixiecore.nix { inherit pkgs mkACI; static=false; };
   qemu = import pkgs/linux/qemu.nix { inherit pkgs mkACI; };
   rkt = import pkgs/linux/rkt.nix { inherit pkgs mkACI; dnsquirks=false;};
+  plex = import pkgs/linux/plex.nix { inherit pkgs mkACI; dnsquirks=false;};
 }
