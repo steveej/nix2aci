@@ -70,18 +70,18 @@ in
 
 
   labelAddString = builtins.foldl' (res: l:
-    res + "${acbuild} label add ${l} ${labels.${l}}\n"
+    res + "${acbuild} label add ${l} \"${labels.${l}}\"\n"
   ) "" (builtins.attrNames labels);
 
   mountsString = builtins.foldl' (res: n:
-    res + "${acbuild} mount add ${n} ${mountsRo.${n}} --read-only\n"
+    res + "${acbuild} mount add ${n} \"${mountsRo.${n}}\" --read-only\n"
   ) "" (builtins.attrNames mountsRo) +
     builtins.foldl' (res: n:
-    res + "${acbuild} mount add ${n} ${mounts.${n}}\n"
+    res + "${acbuild} mount add ${n} \"${mounts.${n}}\"\n"
   ) "" (builtins.attrNames mounts);
 
   envAddString = builtins.foldl' (res: n: res +
-    "${acbuild} environment add ${n} ${env.${n}}\n"
+    "${acbuild} environment add ${n} \"${env.${n}}\"\n"
   ) "" (builtins.attrNames env);
 
   portAddString = builtins.foldl' (res: p:
