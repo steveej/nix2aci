@@ -11,6 +11,7 @@ in {
   acserver = import pkgs/linux/acserver.nix { inherit pkgs mkACI; static=false; };
   bash = import pkgs/linux/bash.nix { inherit pkgs mkACI; static=false; };
   busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
+  busyboxPfwd = import pkgs/linux/busybox-pfwd.nix { inherit pkgs mkACI; static=false; };
   busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
   coreosIpxeServer = import pkgs/linux/coreos-ipxe-server.nix { inherit pkgs mkACI; };
   dnsmasq = import pkgs/linux/dnsmasq.nix { inherit pkgs mkACI; };
