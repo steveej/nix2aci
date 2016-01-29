@@ -8,5 +8,10 @@ mkACI rec {
   inherit thin;
   dnsquirks = args.dnsquirks;
 
-  packages = [ pkg ];
+  packages = [ pkg pkgs.busybox pkgs.cacert ];
+
+  mounts = {
+    "libdocker"="/var/lib/docker";
+    "rundocker"="/var/run/docker";
+  };
 }
