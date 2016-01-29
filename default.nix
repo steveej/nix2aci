@@ -18,7 +18,6 @@ in {
   dnsfail = import pkgs/linux/dnsfail.nix { inherit pkgs mkACI; };
   docker = import pkgs/linux/docker.nix { inherit pkgs mkACI; dnsquirks=false; };
   etcd2 = import pkgs/linux/etcd2.nix { inherit pkgs mkACI; };
-#  lighthttpd = import pkgs/linux/lighthttpd.nix { inherit pkgs mkACI; };
   pixiecore = import pkgs/linux/pixiecore.nix { inherit pkgs mkACI; static=false; };
   qemu = import pkgs/linux/qemu.nix { inherit pkgs mkACI; };
   rkt = import pkgs/linux/rkt.nix { inherit pkgs mkACI; dnsquirks=false;};
