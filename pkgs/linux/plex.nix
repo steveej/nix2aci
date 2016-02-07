@@ -17,7 +17,7 @@ mkACI rec {
       "https" = [ "tcp" "32400" ];
   };
 
-  exec = "/usr/lib/plexmediaserver/Plex Media Server";
+  exec = "\"/usr/lib/plexmediaserver/Plex Media Server\"";
 
   env = {
       "PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR" = "/var/lib/plexmediaserver/Library/Application Support";
