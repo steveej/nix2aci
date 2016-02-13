@@ -173,8 +173,9 @@ if [[ -e $out/${acname}.mounts ]]; then
   echo Linking $out/${acname}.mounts into \$script_outdir
   ln -sf $out/${acname}.mounts \$script_outdir;
 fi
-${if sign == true then "gpg2 --batch --armor --output \\$script_outdir/${acname}.aci.asc --detach-sig $out/${acname}.aci"
-else ""}
+${if sign == true then
+ "gpg2 --yes --batch --armor --output \\$script_outdir/${acname}.aci.asc --detach-sig $out/${acname}.aci"
+ else ""}
 EOF
 
     chmod +x $postProcScript
