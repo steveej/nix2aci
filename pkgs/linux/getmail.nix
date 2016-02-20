@@ -1,5 +1,5 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
-let 
+let
   pkg = pkgs.getmail;
 in
 
@@ -14,7 +14,7 @@ mkACI rec {
   group = "1000";
 
   env = {
-      "LC_ALL" = "en_US.UTF-8";
-      "LANG" = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
+    LANG = "en_US.UTF-8";
   };
 }

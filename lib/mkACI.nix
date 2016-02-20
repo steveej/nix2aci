@@ -22,31 +22,45 @@ args @ { pkgs
 }:
 
 let
-  myacbuild = pkgs.stdenv.mkDerivation rec {
-    version = "0.2.1";
-    name = "acbuild-${version}";
-    src = pkgs.fetchFromGitHub {
-      rev    = "42f7b64f898f269e04017db5ef4f0136645fb07b";
-      owner  = "appc";
-      repo   = "acbuild";
-      sha256 = "1sgndhjgharfrdqfcbbwdc038j5y3bb5prgpv2crimyc7rqpgvrw";
+  mountPoint = readOnly: name: {
+     "name" = name;
+     "path" = mounts.${name};
+     "readOnly" = readOnly;
+  };
+  propertyList = (list:
+    builtins.map (l: {"name" = l; "value" = list.${l}; }) (builtins.attrNames list));
+
+  mountPoints = (builtins.map (mountPoint false) (builtins.attrNames mounts));
+  mountPointsRo = (builtins.map (mountPoint true) (builtins.attrNames mountsRo));
+  name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
+  version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
+  execArgv = if (builtins.isString exec) then [exec]
+    else if (builtins.isList exec) then exec
+    else throw "exec should be a list, got: " + (builtins.typeOf exec);
+
+  portProps = (builtins.map (p: {"name" = p;} // ports.${p}) (builtins.attrNames ports));
+
+  manifest = {
+    acKind = "ImageManifest";
+    acVersion = "0.7.4+git";
+    name = name;
+    version = version;
+    labels = (propertyList (acLabels // {
+      os = os;
+      arch = arch;
+    }));
+    app = {
+      exec = execArgv;
+      user = (toString user);
+      group = (toString group);
+      mountPoints = mountPoints ++ mountPointsRo;
+      ports = portProps;
+      isolators = (propertyList isolators);
+      environment = (propertyList env);
     };
-    buildInputs = [ pkgs.goPackages.go ];
-    patchPhase = ''
-      sed -i -e 's|\$(git describe --dirty)|"${version}"|' build
-      sed -i -e 's|\$GOBIN/acbuild|$out/bin/acbuild|' build
-    '';
-    installPhase = ''
-      mkdir -p $out/bin
-      ./build
-    '';
   };
 
-  labels = {
-    "os"=os;
-    "arch"= arch;
-  } // acLabels;
-
+  bool_to_str = b: if b then "true" else "false";
 in
   pkgs.stdenv.mkDerivation rec {
   name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;
@@ -55,8 +69,7 @@ in
   inherit os;
   inherit arch;
 
-  # acbuild and perl are needed for the build script that procudes the ACI
-  buildInputs = [ myacbuild pkgs.perl ];
+  buildInputs = [ pkgs.python3 ];
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
@@ -66,119 +79,40 @@ in
   exportReferencesGraph = map (x: [("closure-" + baseNameOf x) x]) packages;
 
   acname = "${name}-${version}-${os}-${arch}";
-  acbuild="acbuild --debug ";
 
-
-  labelAddString = builtins.foldl' (res: l:
-    res + "${acbuild} label add ${l} \"${labels.${l}}\"\n"
-  ) "" (builtins.attrNames labels);
-
-  mountsString = builtins.foldl' (res: n:
-    res + "${acbuild} mount add ${n} \"${mountsRo.${n}}\" --read-only\n"
-  ) "" (builtins.attrNames mountsRo) +
-    builtins.foldl' (res: n:
-    res + "${acbuild} mount add ${n} \"${mounts.${n}}\"\n"
-  ) "" (builtins.attrNames mounts);
-
-  envAddString = builtins.foldl' (res: n: res +
-    "${acbuild} environment add ${n} \"${env.${n}}\"\n"
-  ) "" (builtins.attrNames env);
-
-  portAddString = builtins.foldl' (res: p:
-    res + "${acbuild} port add ${p} ${builtins.concatStringsSep " " ports.${p}} \n"
-  ) "" (builtins.attrNames ports);
-
-  isolatorAddString = builtins.foldl' (res: i:
-    res + "echo '${isolators.${i}}' | ${acbuild} isolator add ${i} -\n"
-  ) "" (builtins.attrNames isolators);
-
-  execString = if exec == null then "" else "${acbuild} set-exec ${exec}\n";
-
+  manifestJson = builtins.toFile "manifest" (builtins.toJSON manifest);
 
   phases = "buildPhase";
   buildPhase = ''
     set -x
     set -e
 
-    ${if static == true then ''
-    storePaths=${builtins.elemAt packages 0}
-    echo STATIC
-    '' else ''
-    storePaths=$(perl ${pkgs.pathsFromGraph} closure-*)
-    echo DYNAMIC
-    ''}
-
-    ${acbuild} begin
-    trap "{ export EXT=$?;
-    ${pkgs.findutils}/bin/find .acbuild/ -type d -exec chmod +wr {} +
-    ${acbuild} end
-    exit $EXT;
-    }" EXIT
-
     # Generic Manifest information
-    ${acbuild} set-name ${name}
-
-    # The environment contians symlinks in bin/, sbin/, etc...
-    # TODO: fix acbuild copy so it allows to copy this structure
-    [[ ! -e ${customEnv}/etc ]] || cp -aL ${customEnv}/etc .acbuild/currentaci/rootfs/
-    cp -au ${customEnv}/* .acbuild/currentaci/rootfs/
-
-    mkdir -p $out
-
-    # DNS quirks
-    ${if dnsquirks == true then ''
-    mkdir -p .acbuild/currentaci/rootfs/etc
-    printf '127.0.0.1 localhost\n' "" >> .acbuild/currentaci/rootfs/etc/hosts
-    printf '::1 localhost\n' "" >> .acbuild/currentaci/rootfs/etc/hosts
-    '' else ""}
-
-    ${if thin == true then ''
-    printf "" > $out/${acname}.mounts
-    for p in ''${storePaths}; do
-      mountname=''${p//[\/\.]/}
-      mountname=''${mountname,,}
-      ${acbuild} mount add $mountname $p --read-only
-      printf ' --volume=%s,kind=host,source=%s ' $mountname $p >> $out/${acname}.mounts
-    done
-    ''
-    else ''
-    mkdir -p .acbuild/currentaci/rootfs/nix/store/nix/store
-    for p in ''${storePaths}; do
-      cp -a ''${p} .acbuild/currentaci/rootfs''${p}
-    done
-    ''}
-
-    ${labelAddString}
-    ${mountsString}
-    ${envAddString}
-    ${portAddString}
-    ${isolatorAddString}
-
-    ${execString}
-    ${acbuild} set-user ${user};
-    ${acbuild} set-group ${group};
-
-
-    ${acbuild} write --overwrite $out/${acname}.aci
+    python3 ${./mkACI.py} \
+      --thin=${bool_to_str thin} \
+      --dnsquirks=${bool_to_str dnsquirks} \
+      --static=${bool_to_str static} \
+      $out/${acname}.aci ${manifestJson} ${customEnv} \
+      ${if static == true then (builtins.elemAt packages 0) else "closure-*"}
 
     postProcScript=$out/postprocess.sh
-
     cat > $postProcScript <<EOF
-#!/usr/bin/env bash
-script_outdir=\''${1:-ACIs/}
-mkdir -p \$script_outdir
-echo Linking $out/${acname}.aci into \$script_outdir
-ln -sf $out/${acname}.aci \$script_outdir/
-if [[ -e $out/${acname}.mounts ]]; then
-  echo Linking $out/${acname}.mounts into \$script_outdir
-  ln -sf $out/${acname}.mounts \$script_outdir;
-fi
-${if sign == true then
- "gpg2 --yes --batch --armor --output \\$script_outdir/${acname}.aci.asc --detach-sig $out/${acname}.aci"
- else ""}
-EOF
+    #!/usr/bin/env bash -e
+    script_outdir=\''${1:-ACIs/}
+    mkdir -p \$script_outdir
+    echo "Linking $out/${acname}.aci into \$script_outdir"
+    ln -sf "$out/${acname}.aci" "\$script_outdir/"
+    ${if thin == true then
+    "echo \"Linking $out/${acname}.mounts into \$script_outdir\"
+    ln -sf \"$out/${acname}.mounts\" \"\$script_outdir\""
+    else ""}
+    ${if sign == true then
+     "gpg2 --yes --batch --armor --output \"\\$script_outdir/${acname}.aci.asc\" --detach-sig \"$out/${acname}.aci\""
+     else ""}
+    EOF
 
-    chmod +x $postProcScript
+    chmod +x "$postProcScript"
+    set +x
   '';
 
 }

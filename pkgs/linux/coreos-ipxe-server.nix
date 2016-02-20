@@ -31,10 +31,10 @@ in mkACI rec {
   acVersion = pkg.version;
 
   mounts = {
-    "datadir" = "/opt/coreos-ipxe-server";
+    datadir = "/opt/coreos-ipxe-server";
   };
 
   ports = {
-    "www" = [ "tcp" "4777" ];
+    www = { protocol = "tcp"; port = "4777"; };
   };
 }

@@ -20,8 +20,8 @@ mkACI rec {
   '';
 
   ports = {
-    "spice" = [ "tcp" "5101" ];
-    "vnc" = [ "tcp" "5900" ];
+    spice = { protocol = "tcp"; port = "5101"; };
+    vnc = { protocol = "tcp"; port = "5900"; };
   };
 }
 
