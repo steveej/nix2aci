@@ -11,7 +11,7 @@ mkACI rec {
   packages = [ pkg pkgs.busybox pkgs.cacert ];
 
   mounts = {
-    "libdocker"="/var/lib/docker";
-    "rundocker"="/var/run/docker";
+    libdocker = "/var/lib/docker";
+    rundocker = "/var/run/docker";
   };
 }

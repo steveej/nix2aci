@@ -1,5 +1,5 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
-let 
+let
   pkg = pkgs.go15Packages.etcd.bin;
 in
 
@@ -14,14 +14,14 @@ mkACI rec {
   exec = "/bin/etcd";
 
   mounts = {
-    "datadir" = "/var/db/etcd2";
+    datadir = "/var/db/etcd2";
   };
 
   mountsRo = {
-    "resolvconf"="/etc/resolv.conf";
+    resolvconf = "/etc/resolv.conf";
   };
 
   env = {
-    "ETCD_DATA_DIR"="/var/db/etcd2/";
+    ETCD_DATA_DIR = "/var/db/etcd2/";
   };
 }

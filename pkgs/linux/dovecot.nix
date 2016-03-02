@@ -1,5 +1,5 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
-let 
+let
   pkg = pkgs.dovecot22;
 in
 
@@ -11,17 +11,17 @@ mkACI rec {
   packages = [ pkg pkgs.dovecot_pigeonhole ];
 
   ports = {
-      "imaps" = [ "tcp" "993" ];
-      "sieve" = [ "tcp" "4190" ];
+    imaps = { protocol = "tcp"; port = "993"; };
+    sieve = { protocol = "tcp"; port = "4190"; };
   };
 
   mounts = {
-    "mail" = "/var/vmail";
-    "etc-dovecot" = "/etc/dovecot";
+    mail = "/var/vmail";
+    etc-dovecot = "/etc/dovecot";
   };
 
   env = {
-      "LC_ALL" = "en_US.UTF-8";
-      "LANG" = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
+    LANG = "en_US.UTF-8";
   };
 }

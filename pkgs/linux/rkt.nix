@@ -1,5 +1,5 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
-let 
+let
   pkg = pkgs.rkt;
 in
 

@@ -27,11 +27,11 @@ mkACI rec {
   exec = ''/bin/busybox -- sh -c "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"'';
 
   mountsRo = {
-    "rslvc"="/etc/resolv.conf";
+    rslvc = "/etc/resolv.conf";
   };
 
   ports = {
-    "nc" = [ "tcp" "1024" ];
+    nc = { protocol = "tcp"; port = "1024"; };
   };
 }
 
