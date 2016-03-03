@@ -24,7 +24,11 @@ mkACI rec {
   thin = false;
   packages = [ pkg pkgs.eject ];
   versionAddon = if static == true then "-pfwd-static" else "-pfwd";
-  exec = ''/bin/busybox -- sh -c "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"'';
+
+  exec = [
+    "/bin/busybox"
+    "sh" "-c" "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"
+  ];
 
   mountsRo = {
     rslvc = "/etc/resolv.conf";
