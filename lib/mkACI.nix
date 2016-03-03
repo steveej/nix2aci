@@ -97,7 +97,8 @@ in
 
     postProcScript=$out/postprocess.sh
     cat > $postProcScript <<EOF
-    #!/usr/bin/env bash -e
+    #!/usr/bin/env bash
+    set -e
     script_outdir=\''${1:-ACIs/}
     mkdir -p \$script_outdir
     echo "Linking $out/${acname}.aci into \$script_outdir"
