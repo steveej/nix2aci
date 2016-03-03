@@ -29,5 +29,9 @@ mkACI rec {
     "/bin/busybox"
     "sh" "-c" "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"
   ];
+
+  isolators = {
+      "os/linux/capabilities-retain-set" = { "set" = [ "CAP_NET_ADMIN" ]; };
+  };
 }
 
