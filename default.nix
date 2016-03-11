@@ -1,7 +1,7 @@
 { pkgs ? import ((import <nixpkgs> {}).fetchgit {
     url = "https://github.com/NixOS/nixpkgs.git";
     rev = "5e96bac3fb8f12c9c63562938a33595b7553ddbb";
-    sha256 = "1qr4xqgc4vnhq1s0xcqp2l6447n8fdp1dh343l6a75fqn2dh6hrk";
+    sha256 = "1civ078n8iyyrnpzr6b2427l1wcd5rdpds77bvwl5j1r8kmn0bwr";
     leaveDotGit = true; }) {}
 , mkACI ? import lib/mkACI.nix
 }:
