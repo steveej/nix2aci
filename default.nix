@@ -7,7 +7,13 @@ let
 in {
   acserver = import pkgs/linux/acserver.nix { inherit pkgs mkACI; static=false; };
   bash = import pkgs/linux/bash.nix { inherit pkgs mkACI; static=false; };
-  busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
+  busybox = import pkgs/linux/busybox.nix {
+    inherit pkgs mkACI;
+    static=false;
+    authors="steveeJ";
+    documentation="https://github.com/steveeJ/nix2aci";
+    homepage="https://github.com/steveeJ/nix2aci";
+  };
   busyboxPfwd = import pkgs/linux/busybox-pfwd.nix { inherit pkgs mkACI; static=false; };
   busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
   busyboxThin = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; thin=true; };
