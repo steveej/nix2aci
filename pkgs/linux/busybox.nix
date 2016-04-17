@@ -21,7 +21,7 @@ in
 mkACI rec {
   inherit pkgs;
   inherit static;
-  thin = false;
+  inherit thin;
   packages = [ pkg pkgs.eject ];
   versionAddon = if static == true then "-static" else "";
 
