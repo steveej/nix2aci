@@ -72,3 +72,13 @@ run: group "rkt" not found, will use default gid when rendering images
 / # busybox | head -n1
 BusyBox v1.23.2 () multi-call binary.
 ```
+
+# Tests
+
+The test assumes nix-build to be installed.
+This can be done using following the instructions [here](https://nixos.org/wiki/How_to_install_nix_in_home_(on_another_distribution)#PRoot_Installation).
+Then run:
+
+```
+bash ./test.sh
+```
