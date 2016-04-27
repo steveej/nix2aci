@@ -84,7 +84,7 @@ def build_aci(aci,
     nixstore = []
     envfiles = []
     if static:
-        storePaths = [closures]
+        storePaths = closures
     else:
         storePaths = paths_from_graphs(closures)
 

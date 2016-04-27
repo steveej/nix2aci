@@ -1,12 +1,8 @@
-{ pkgs ? import ((import <nixpkgs> {}).fetchgit {
-    url = "https://github.com/NixOS/nixpkgs.git";
-    rev = "5e96bac3fb8f12c9c63562938a33595b7553ddbb";
-    sha256 = "1qr4xqgc4vnhq1s0xcqp2l6447n8fdp1dh343l6a75fqn2dh6hrk";
-    leaveDotGit = true; }) {}
+{ pkgs ? import (fetchTarball "https://nixos.org/releases/nixpkgs/nixpkgs-16.03pre76763.be0abb3/nixexprs.tar.xz") {}
 , mkACI ? import lib/mkACI.nix
 }:
 
-let 
+let
   dnsquirks = false;
 in {
   acserver = import pkgs/linux/acserver.nix { inherit pkgs mkACI; static=false; };
@@ -14,6 +10,7 @@ in {
   busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
   busyboxPfwd = import pkgs/linux/busybox-pfwd.nix { inherit pkgs mkACI; static=false; };
   busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
+  busyboxThin = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; thin=true; };
   coreosIpxeServer = import pkgs/linux/coreos-ipxe-server.nix { inherit pkgs mkACI; };
   dnsmasq = import pkgs/linux/dnsmasq.nix { inherit pkgs mkACI; };
   dnsfail = import pkgs/linux/dnsfail.nix { inherit pkgs mkACI; };

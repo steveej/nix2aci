@@ -1,0 +1,11 @@
+env:
+  - NIX_VERSION=1.11.2 APPC_VERSION=0.7.4
+install:
+  - bash ci/install-nix.sh
+  - bash ci/install-appc.sh
+script:
+  - >
+    ~/proot-x86_64 -b ~/nix-${NIX_VERSION}-x86_64-linux/:/nix
+    bash -c '. ~/.nix-profile/etc/profile.d/nix.sh &&
+             export PATH=~/appc-v${APPC_VERSION}:$PATH &&
+             ./test.sh'

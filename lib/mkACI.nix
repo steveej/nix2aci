@@ -104,8 +104,8 @@ in
     echo "Linking $out/${acname}.aci into \$script_outdir"
     ln -sf "$out/${acname}.aci" "\$script_outdir/"
     ${if thin == true then
-    "echo \"Linking $out/${acname}.mounts into \$script_outdir\"
-    ln -sf \"$out/${acname}.mounts\" \"\$script_outdir\""
+    "echo \"Linking $out/${acname}.mounts into \\$script_outdir\"
+    ln -sf \"$out/${acname}.mounts\" \"\\$script_outdir\""
     else ""}
     ${if sign == true then
      "gpg2 --yes --batch --armor --output \"\\$script_outdir/${acname}.aci.asc\" --detach-sig \"$out/${acname}.aci\""
