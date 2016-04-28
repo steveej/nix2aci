@@ -42,7 +42,7 @@ let
 
   manifest = {
     acKind = "ImageManifest";
-    acVersion = "0.7.4+git";
+    acVersion = "0.7.4";
     name = name;
     version = version;
     labels = (propertyList (acLabels // {
