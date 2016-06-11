@@ -15,4 +15,8 @@ in mkACI rec {
 
   static = false;
   packages = [ pkg ];
+
+  ports = { 
+    srv = { protocol = "tcp"; port = 3000; };
+  };
 }
