@@ -10,7 +10,7 @@ You can expect this README to be minimal but it should always contain working ex
 ## ACI Build Requirements
 * local copy of this repository
 * [nix](http://www.nixos.org/nix) plus the skills to query package names
-* [acbuild](http://github.com/appc/acbuild)
+* python
 
 ## ACI Runtime Requirements
 * [coreos/rkt](https://github.com/coreos/rkt/)
