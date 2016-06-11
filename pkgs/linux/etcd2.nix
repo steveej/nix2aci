@@ -1,6 +1,6 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
 let
-  pkg = pkgs.go15Packages.etcd.bin;
+  pkg = pkgs.go16Packages.etcd.bin;
 in
 
 mkACI rec {

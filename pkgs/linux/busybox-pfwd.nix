@@ -35,7 +35,7 @@ mkACI rec {
   };
 
   ports = {
-    nc = { protocol = "tcp"; port = "1024"; };
+    nc = { protocol = "tcp"; port = 1024; };
   };
 }
 

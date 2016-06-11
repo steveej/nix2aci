@@ -55,12 +55,13 @@ def add_mounts(manifestPath, storePaths, mountArgPath):
         json.dump(manifest, f, indent=4)
 
 
-def tar(file_list, archive):
+def tar(file_list, archive, custom_env):
     # prefix everything with rootfs except "manifest" and "rootfs" itself
     t = ['flags=rSh',
          's,^,rootfs/,',
          's,^rootfs/manifest,manifest,',
-         's,^rootfs/rootfs,rootfs,']
+         's,^rootfs/rootfs,rootfs,',
+         's,'+custom_env[1:]+'/,,']
     cmd = ["tar",
            "--create",
            "--file", archive,
@@ -69,6 +70,7 @@ def tar(file_list, archive):
            "-T", "-",
            "--transform", ";".join(t)]
     print("$ " + " ".join(cmd))
+    print(file_list)
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     proc.communicate(input=str.encode("\0".join(file_list)))
 
@@ -81,8 +83,8 @@ def build_aci(aci,
               static=False,
               dnsquirks=False):
     os.mkdir(os.path.dirname(aci))
-    nixstore = []
-    envfiles = []
+    file_list = ["manifest", "rootfs", "etc"]
+
     if static:
         storePaths = closures
     else:
@@ -93,16 +95,14 @@ def build_aci(aci,
             cp = ["cp", "-aL", os.path.join(custom_env, "etc"), "etc"]
             subprocess.call(cp)
         else:
-            envfiles.append(path)
+            file_list.append(custom_env+'/'+path)
 
     copyfile(manifest, "manifest")
     if thin:
         mountArgPath = os.path.splitext(aci)[0] + ".mounts"
         add_mounts("manifest", storePaths, mountArgPath)
     else:
-        nixstore.append("-C/")
-        for path in storePaths:
-            nixstore.append(path.rstrip()[1:])
+        file_list+=storePaths
 
     if dnsquirks:
         if not os.path.exists("etc"):
@@ -111,15 +111,7 @@ def build_aci(aci,
             f.write("127.0.0.1 localhost\n::1 localhost\n")
 
     os.mkdir("rootfs")
-    file_list = ["-C" + os.path.realpath("."), "manifest", "rootfs", "etc"]
-
-    file_list.append("-C/")
-    file_list += nixstore
-
-    file_list.append("-C" + custom_env)
-    file_list += envfiles
-
-    tar(file_list, aci)
+    tar(file_list, aci, custom_env)
 
 
 def main():

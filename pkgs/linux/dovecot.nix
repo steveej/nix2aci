@@ -1,6 +1,6 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
 let
-  pkg = pkgs.dovecot22;
+  pkg = pkgs.dovecot;
 in
 
 mkACI rec {

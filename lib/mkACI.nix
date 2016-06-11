@@ -12,7 +12,7 @@ args @ { pkgs
 , mountsRo ? {}
 , ports ? {}
 , env ? {}
-, exec ? null
+, exec ? ""
 , user ? "0"
 , group ? "0"
 , sign ? true
@@ -22,7 +22,7 @@ args @ { pkgs
 }:
 
 let
-  mountPoint = readOnly: name: {
+  mountPoint = readOnly: mounts: name: {
      "name" = name;
      "path" = mounts.${name};
      "readOnly" = readOnly;
@@ -30,9 +30,9 @@ let
   propertyList = (list:
     builtins.map (l: {"name" = l; "value" = list.${l}; }) (builtins.attrNames list));
 
-  mountPoints = (builtins.map (mountPoint false) (builtins.attrNames mounts));
-  mountPointsRo = (builtins.map (mountPoint true) (builtins.attrNames mountsRo));
-  name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
+  mountPoints = (builtins.map (mountPoint false mounts) (builtins.attrNames mounts));
+  mountPointsRo = (builtins.map (mountPoint true mountsRo) (builtins.attrNames mountsRo));
+  name = (builtins.replaceStrings ["go1.6-" "go1.5-" "go1.4-" "-"] [ "" "" "" "_"] acName);
   version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
   execArgv = if (builtins.isString exec) then [exec]
     else if (builtins.isList exec) then exec
@@ -51,8 +51,8 @@ let
     }));
     app = {
       exec = execArgv;
-      user = (toString user);
-      group = (toString group);
+      user = user;
+      group = group;
       mountPoints = mountPoints ++ mountPointsRo;
       ports = portProps;
       isolators = (propertyList isolators);
@@ -63,8 +63,8 @@ let
   bool_to_str = b: if b then "true" else "false";
 in
   pkgs.stdenv.mkDerivation rec {
-  name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;
-  version = builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon;
+  inherit name;
+  inherit version;
 
   inherit os;
   inherit arch;
