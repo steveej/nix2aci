@@ -1,6 +1,9 @@
 { mkACI
 , pkgs
 , thin ? false
+, documentation ? null
+, homepage ? null
+, authors ? null
 , static
 , ... }
 @ args:
@@ -19,9 +22,7 @@ let
 in
 
 mkACI rec {
-  inherit pkgs;
-  inherit static;
-  inherit thin;
+  inherit pkgs static thin documentation homepage authors;
   packages = [ pkg pkgs.eject ];
   versionAddon = if static == true then "-static" else "";
 

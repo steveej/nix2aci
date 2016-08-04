@@ -19,6 +19,9 @@ args @ { pkgs
 , isolators ? {}
 , dnsquirks ? true
 , static ? false
+, authors ? null
+, homepage ? null
+, documentation ? null
 }:
 
 let
@@ -40,6 +43,12 @@ let
 
   portProps = (builtins.map (p: {"name" = p;} // ports.${p}) (builtins.attrNames ports));
 
+  optionalAttr = (key: val: if isNull val then {} else {${key} = val; });
+
+  annotations = (optionalAttr "authors" authors) //
+                (optionalAttr "homepage" homepage) //
+                (optionalAttr "documentation" documentation);
+
   manifest = {
     acKind = "ImageManifest";
     acVersion = "0.7.4";
@@ -58,6 +67,7 @@ let
       isolators = (propertyList isolators);
       environment = (propertyList env);
     };
+    annotations = (propertyList annotations);
   };
 
   bool_to_str = b: if b then "true" else "false";
