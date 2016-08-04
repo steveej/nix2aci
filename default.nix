@@ -23,4 +23,5 @@ in {
   qemu = import pkgs/linux/qemu.nix { inherit pkgs mkACI; };
   rkt = import pkgs/linux/rkt.nix { inherit pkgs mkACI; dnsquirks=false;};
   #plex = import pkgs/linux/plex.nix { inherit pkgs mkACI; dnsquirks=false;};
+  tcpdump = import pkgs/linux/generic.nix { inherit pkgs mkACI; dnsquirks=false; packages=[ pkgs.tcpdump ]; static=false; };
 }
