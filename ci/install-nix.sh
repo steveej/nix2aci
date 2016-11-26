@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eux
 
-NIX_VERSION=${NIX_VERSION:-1.11.2}
+NIX_VERSION=${NIX_VERSION:-1.11.4}
 
 wget https://nixos.org/releases/nix/latest/nix-${NIX_VERSION}-x86_64-linux.tar.bz2 -qO- | tar xj -C ~/
 
