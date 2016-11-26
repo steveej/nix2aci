@@ -11,7 +11,6 @@ in {
   busyboxPfwd = import pkgs/linux/busybox-pfwd.nix { inherit pkgs mkACI; static=false; };
   #busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
   #busyboxThin = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; thin=true; };
-  #coreosIpxeServer = import pkgs/linux/coreos-ipxe-server.nix { inherit pkgs mkACI; };
   dnsmasq = import pkgs/linux/dnsmasq.nix { inherit pkgs mkACI; };
   #dnsfail = import pkgs/linux/dnsfail.nix { inherit pkgs mkACI; };
   docker = import pkgs/linux/docker.nix { inherit pkgs mkACI; inherit dnsquirks; };
