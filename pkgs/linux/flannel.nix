@@ -6,7 +6,7 @@
 @ args:
 
 let
-  pkg = pkgs.iperf;
+  pkg = pkgs.flannel;
   busybox = if static == true
     then
       (pkgs.busybox.override {
@@ -26,5 +26,9 @@ mkACI rec {
   packages = [ pkg busybox pkgs.eject ];
   versionAddon = if static == true then "-static" else "";
   exec = ''/bin/busybox -- sh -c "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"'';
+
+  isolators = {
+      "os/linux/capabilities-retain-set" = { "set" = [ "CAP_NET_ADMIN" ]; };
+  };
 }
 

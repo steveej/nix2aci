@@ -1,13 +1,28 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
 let
-  acserver = with pkgs.goPackages; buildFromGitHub{
-    rev    = "45f764ab522020a5fcaf4bbd38802bbe3169e99d";
-    date   = "2016-01-27";
-    owner  = "appc";
-    repo   = "acserver";
-    sha256 = "1w71k3ivv8fp68cgxh4kx7w590mf19dlw3hyc31bxkydaicf781r";
+  acserver = with pkgs; stdenv.mkDerivation rec {
+    date   = "2016-11-11";
+    name = "acserver-"+date;
+    src = fetchFromGitHub { 
+      rev    = "ef1eb24de11f9c7fe74e1a91b82f34687ac13604";
+      owner  = "appc";
+      repo   = "acserver";
+      sha256 = "0bwc3c1ax3igwva224di9izyr2wzw7nninn9m7s28z1dqwvjn7bh";
+    };
+
+
+    buildInputs = [ go ];
+    buildPhase = ''
+      export GOPATH=$src
+      ./build.sh
+    '';
+
+    installPhase = ''
+      mkdir -p $out/bin
+      mv acserver $out/bin
+    '';
   };
-  pkg = acserver.bin;
+  pkg = acserver;
 
 in mkACI rec {
   inherit pkgs;

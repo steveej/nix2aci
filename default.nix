@@ -1,26 +1,26 @@
-{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/bb1a9d3b609bb3111a87a4fb61e12bef0938ba5c.tar.gz") {}
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs-channels/archive/b69f568f4c3ebaf48a7f66b0f051d28157a61afb.tar.gz") {}
 , mkACI ? import lib/mkACI.nix
 }:
 
 let
-  dnsquirks = false;
+  callPackage = pkg: args: pkgs.callPackage pkg ({ inherit pkgs mkACI; dnsquirks=false; } // args);
 in {
-  #acserver = import pkgs/linux/acserver.nix { inherit pkgs mkACI; static=false; };
-  bash = import pkgs/linux/bash.nix { inherit pkgs mkACI; static=false; };
-  busybox = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=false; };
-  busyboxPfwd = import pkgs/linux/busybox-pfwd.nix { inherit pkgs mkACI; static=false; };
-  #busyboxStatic = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; };
-  #busyboxThin = import pkgs/linux/busybox.nix { inherit pkgs mkACI; static=true; thin=true; };
-  dnsmasq = import pkgs/linux/dnsmasq.nix { inherit pkgs mkACI; };
-  #dnsfail = import pkgs/linux/dnsfail.nix { inherit pkgs mkACI; };
-  docker = import pkgs/linux/docker.nix { inherit pkgs mkACI; inherit dnsquirks; };
-  #dovecot = import pkgs/linux/dovecot.nix { inherit pkgs mkACI; inherit dnsquirks; };
-  #etcd2 = import pkgs/linux/etcd2.nix { inherit pkgs mkACI; inherit dnsquirks; };
-  #getmail = import pkgs/linux/getmail.nix { inherit pkgs mkACI; inherit dnsquirks; };
-  iperf = import pkgs/linux/iperf.nix { inherit pkgs mkACI; static=false; };
-  #pixiecore = import pkgs/linux/pixiecore.nix { inherit pkgs mkACI; static=false; };
-  qemu = import pkgs/linux/qemu.nix { inherit pkgs mkACI; };
-  rkt = import pkgs/linux/rkt.nix { inherit pkgs mkACI; dnsquirks=false;};
-  #plex = import pkgs/linux/plex.nix { inherit pkgs mkACI; dnsquirks=false;};
-  tcpdump = import pkgs/linux/generic.nix { inherit pkgs mkACI; dnsquirks=false; packages=[ pkgs.tcpdump ]; static=false; };
+  #TODO:broken upstream# acserver = callPackage pkgs/linux/acserver.nix { };
+  bash = callPackage pkgs/linux/bash.nix { };
+  busybox = callPackage pkgs/linux/busybox.nix { };
+  busyboxThin = callPackage pkgs/linux/busybox.nix { thin=true; };
+  busyboxStatic = callPackage pkgs/linux/busybox.nix { static=true; };
+  busyboxPfwd = callPackage pkgs/linux/busybox-pfwd.nix { };
+  dnsmasq = callPackage pkgs/linux/dnsmasq.nix { };
+  docker = callPackage pkgs/linux/docker.nix { };
+  flannel = callPackage pkgs/linux/flannel.nix { };
+  dovecot = callPackage pkgs/linux/dovecot.nix { };
+  etcd2 = callPackage pkgs/linux/etcd2.nix { };
+  getmail = callPackage pkgs/linux/getmail.nix { };
+  iperf = callPackage pkgs/linux/iperf.nix { };
+  #TODO package# pixiecore = callPackage pkgs/linux/pixiecore.nix { };
+  qemu = callPackage pkgs/linux/qemu.nix { };
+  rkt = callPackage pkgs/linux/rkt.nix { };
+  rktBuildenv = callPackage pkgs/linux/rkt-buildenv.nix { };
+  tcpdump = callPackage pkgs/linux/generic.nix { packages=[ pkgs.tcpdump ]; };
 }
