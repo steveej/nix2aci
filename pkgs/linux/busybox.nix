@@ -1,7 +1,7 @@
 { mkACI
 , pkgs
 , thin ? false
-, static
+, static ? false
 , ... }
 @ args:
 
@@ -9,6 +9,7 @@ let
   pkg = if static == true
     then
       (pkgs.busybox.override {
+         enableStatic = true;
          extraConfig = ''
            CONFIG_STATIC y
            CONFIG_INSTALL_APPLET_DONT y
@@ -22,7 +23,7 @@ mkACI rec {
   inherit pkgs;
   inherit static;
   inherit thin;
-  packages = [ pkg pkgs.eject ];
+  packages = [ pkg ];
   versionAddon = if static == true then "-static" else "";
 
   exec = [

@@ -1,7 +1,7 @@
 { mkACI
 , pkgs
 , thin ? false
-, static
+, static ? false
 , packages ? []
 , ... }
 @ args:

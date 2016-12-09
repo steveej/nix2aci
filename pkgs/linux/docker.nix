@@ -1,4 +1,7 @@
-{ mkACI, pkgs, thin ? false, ... } @ args:
+{ mkACI
+, pkgs
+, thin ? false
+, ... } @ args:
 let 
   pkg = pkgs.docker;
 in
