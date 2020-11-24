@@ -23,4 +23,21 @@ in {
   rkt = callPackage pkgs/linux/rkt.nix { };
   rktBuildenv = callPackage pkgs/linux/rkt-buildenv.nix { };
   tcpdump = callPackage pkgs/linux/generic.nix { packages=[ pkgs.tcpdump ]; };
+  gnupg = callPackage pkgs/linux/generic.nix {
+    packages=[ 
+      pkgs.gnupg
+      pkgs.bashInteractive
+      pkgs.coreutils
+    ];
+
+    exec = "/bin/bash";
+  
+    mounts = {
+      keys = "/var/lib/keys";
+    };
+  
+    mountsRo = {
+      resolvconf = "/etc/resolv.conf";
+    };
+  };
 }
