@@ -3,6 +3,8 @@
 , thin ? false
 , static ? false
 , packages ? []
+, mounts ? {}
+, mountsRo ? {}
 , ... }
 @ args:
 
@@ -11,6 +13,7 @@ mkACI rec {
   inherit static;
   inherit thin;
   inherit packages;
+  inherit mounts mountsRo;
   versionAddon = if static == true then "-static" else "";
 
   isolators = {
